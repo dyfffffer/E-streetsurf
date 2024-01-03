@@ -1,0 +1,34 @@
+ninja_required_version = 1.3
+cxx = c++
+nvcc = /usr/local/cuda-11.7/bin/nvcc
+
+cflags = -pthread -B /home/dengyufei/miniconda3/envs/nr3d/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/include -I/home/dengyufei/neuralsim/nr3d_lib/csrc/third_party/glm -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/torch/csrc/api/include -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/TH -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/THC -I/usr/local/cuda-11.7/include -I/home/dengyufei/miniconda3/envs/nr3d/include/python3.8 -c
+post_cflags = -std=c++14 -DTCNN_MIN_GPU_ARCH=86 -DNGP_OPTIX -O3 -DNDEBUG -DTORCH_API_INCLUDE_EXTENSION_H '-DPYBIND11_COMPILER_TYPE="_gcc"' '-DPYBIND11_STDLIB="_libstdcpp"' '-DPYBIND11_BUILD_ABI="_cxxabi1011"' -DTORCH_EXTENSION_NAME=_sphere_trace -D_GLIBCXX_USE_CXX11_ABI=0
+cuda_cflags = -I/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/include -I/home/dengyufei/neuralsim/nr3d_lib/csrc/third_party/glm -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/torch/csrc/api/include -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/TH -I/home/dengyufei/miniconda3/envs/nr3d/lib/python3.8/site-packages/torch/include/THC -I/usr/local/cuda-11.7/include -I/home/dengyufei/miniconda3/envs/nr3d/include/python3.8 -c
+cuda_post_cflags = -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr --compiler-options ''"'"'-fPIC'"'"'' -std=c++14 --extended-lambda --expt-relaxed-constexpr -U__CUDA_NO_HALF_OPERATORS__ -U__CUDA_NO_HALF2_OPERATORS__ -U__CUDA_NO_HALF_CONVERSIONS__ -U__CUDA_NO_BFLOAT16_CONVERSIONS__ -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 -Xcompiler=-mf16c -Xcompiler=-Wno-float-conversion -Xcompiler=-fno-strict-aliasing -DTCNN_MIN_GPU_ARCH=86 -DNGP_OPTIX -O3 -DNDEBUG -DTORCH_API_INCLUDE_EXTENSION_H '-DPYBIND11_COMPILER_TYPE="_gcc"' '-DPYBIND11_STDLIB="_libstdcpp"' '-DPYBIND11_BUILD_ABI="_cxxabi1011"' -DTORCH_EXTENSION_NAME=_sphere_trace -D_GLIBCXX_USE_CXX11_ABI=0
+cuda_dlink_post_cflags = 
+ldflags = 
+
+rule compile
+  command = $cxx -MMD -MF $out.d $cflags -c $in -o $out $post_cflags
+  depfile = $out.d
+  deps = gcc
+
+rule cuda_compile
+  depfile = $out.d
+  deps = gcc
+  command = $nvcc  $cuda_cflags -c $in -o $out $cuda_post_cflags
+
+
+
+
+
+build /home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/entry.o: cuda_compile /home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/entry.cu
+build /home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/sphere_tracer.o: cuda_compile /home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/sphere_tracer.cu
+
+
+
+
+
+
+

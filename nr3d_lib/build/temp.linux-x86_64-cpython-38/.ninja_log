@@ -1,0 +1,20 @@
+# ninja log v5
+0	23948	1703645917525051857	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/pack_ops/pack_ops.o	6fce0156d13a7e21
+1	61478	1703645955069067089	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/pack_ops/pack_ops_cuda.o	82ba0e5f07e7ac35
+12	26750	1703645982485078997	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/occ_grid/occ_grid.o	75f15ad5c434fba4
+11	53374	1703646009133091171	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/occ_grid/batched_marching.o	e64361a68ac313b9
+12	53473	1703646009233091218	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/occ_grid/ray_marching.o	b39ba7d13980f718
+11	22695	1703646032597102354	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/shencoder/bindings.o	a3fb2f4e762afcdf
+12	47392	1703646057309114580	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/shencoder/shencoder.o	674497dab5488a2
+11	22607	1703646080441126423	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/freqencoder/bindings.o	cdceb6f9c5b3e69d
+11	46496	1703646104353139050	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/freqencoder/freqencoder.o	4b7b3787cea96f9c
+13	23708	1703646128681152280	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/knn_from_pytorch3d/ext.o	57fce3073c2ad380
+14	23805	1703646128777152333	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/knn_from_pytorch3d/knn_cpu.o	3b2ecdf153518502
+13	66101	1703646171073176207	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/knn_from_pytorch3d/knn.o	d52debce9a28370a
+11	30027	1703646201917194271	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/lotd/src/lotd.o	91247b46b0147217
+13	53795	1703646225713208560	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/lotd/src/lotd_torch_api.o	7eb9ccdc1693eb67
+11	54991	1703646226909209285	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/lotd/src/lotd_impl_2d.o	56d8bf6fe1901ec0
+12	79280	1703646251193224183	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/lotd/src/lotd_impl_3d.o	ef1173dafe88a0ce
+12	92153	1703646264061232196	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/lotd/src/lotd_impl_4d.o	52baaa65d7581aef
+14	17895	1703646282657243914	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/sphere_tracer.o	50276b3d00696bec
+13	53513	1703646318269266797	/home/dengyufei/neuralsim/nr3d_lib/build/temp.linux-x86_64-cpython-38/home/dengyufei/neuralsim/nr3d_lib/csrc/sphere_trace/src/entry.o	98ad0e21588536f1
