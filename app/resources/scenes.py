@@ -38,31 +38,33 @@ class namedtuple_observer_infos(NamedTuple):
     all_tracks: torch.Tensor
     all_frustum_pts: torch.Tensor
 
+# 存储场景信息的类
 class Scene(object):
     def __init__(self, unique_id: str='WORLD', device=torch.device('cuda'), dtype=torch.float) -> None:
         self.device = device
         self.dtype = dtype
         
-        self.id = unique_id
+        # 场景的唯一标识
+        self.id = unique_id 
         
         #-------- Init scene graph basic structures
         self._init_graph()
         
-        #-------- For scene with loaded sequence/log data
-        # The frame ind(s) frozen at 
+        #-------- For scene with loaded sequence/log data 场景的相关信息
+        # The frame ind(s) frozen at 场景对应的帧索引
         self.i = None
-        # Total data frames of this scene (if this scene has a `dataset`)
+        # Total data frames of this scene (if this scene has a `dataset`) 这个场景的总帧数
         self.n_frames: int = 0 
-        # The offset between scene's frames and dataset's frames (if this scene has a `dataset`)
+        # The offset between scene's frames and dataset's frames (if this scene has a `dataset`) 场景的索引和数据集的索引的偏移
         self.data_frame_offset: int = 0
         
-        #-------- Scene meta data
+        #-------- Scene meta data 场景的元数据
         self.metas: dict = {}
         
         #-------- Optional scene-level misc models
-        # app/models_misc/learnable_params.py; Scene parameter (pose, intr, extr) refinement 
+        # app/models_misc/learnable_params.py; Scene parameter (pose, intr, extr) refinement 位姿、内外参
         self.learnable_params = None
-        # app/models_misc/image_embeddings.py; Per-frame image embeddings, as in NeRF in the wild
+        # app/models_misc/image_embeddings.py; Per-frame image embeddings, as in NeRF in the wild 图像嵌入信息
         self.image_embeddings = None
         
         #-------- For code_single, the single object that we focus on. 

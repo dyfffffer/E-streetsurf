@@ -165,6 +165,7 @@ def create_scene_bank(
     misc_node_class_names: List[str] = ['node', 'Ego', 'EgoVehicle', 'EgoDrone'], 
     scenebank_root: Optional[str] = None, # The directory to optionally save the created scene_bank
     device=torch.device('cuda')) -> Tuple[IDListedDict[Scene], dict]:
+    #(字典列表，字典)
     
     scenario_list = []    
     scene_bank: IDListedDict[Scene] = IDListedDict()
@@ -186,6 +187,15 @@ def create_scene_bank(
         scene = load_scene(scenario, device=device)
         scenario_list.append(scenario)
         scene_bank.append(scene)
+        # print("\033[35mscene")
+        # print(scene.i)
+        # print(scene.n_frames)
+        # print(scene.data_frame_offset)
+        # print(scene.learnable_params)
+        # print(scene.image_embeddings)
+        # print("\033[0m")
+
+
 
     scenebank_meta = dict(
         scene_id_list=list(scene_bank.keys()),

@@ -1,0 +1,194 @@
+AssetBank(
+  (LoTDNeuSStreet#Street#segment-10061305430875486848_1080_000_1100_000_with_camera_labels#street): LoTDNeuSStreet(
+    (implicit_surface): LoTDSDF(
+      (encoding): LoTDEncoding(
+        (space): AABBSpace(
+          aabb=tensor([[-12.0451, -71.4550, -34.6469],
+                  [165.4693,  65.6519,  19.7255]], device='cuda:0')
+        )
+        (lotd): LoTD(
+          in_dim=3, out_dim=34, num_levels=17, num_params=32586228, params_size=62.153 MiB, device=cuda:0, dtype=torch.float16
+          lod_res=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          lod_res_multi_dim=[[87, 67, 26], [120, 93, 37], [166, 128, 51], [230, 178, 70], [318, 246, 97], [440, 340, 134], [608, 470, 186], [841, 650, 257], [1163, 898, 356], [1607, 1241, 492], [2221, 1715, 680], [3069, 2371, 940], [4242, 3276, 1299], [5863, 4528, 1795], [8103, 6258, 2482], [11198, 8649, 3430], [15476, 11953, 4740]]
+          lod_n_feats=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+          lod_types=['Dense', 'Dense', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash']
+          lod_n_params=[303108, 825840, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152, 2097152]
+          lod_n_params_cumsum=[303108, 1128948, 3226100, 5323252, 7420404, 9517556, 11614708, 13711860, 15809012, 17906164, 20003316, 22100468, 24197620, 26294772, 28391924, 30489076, 32586228]
+          lod_n_params_ratio=[0.009, 0.025, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064, 0.064]
+          lod_n_params_cumsum_ratio=[0.009, 0.035, 0.099, 0.163, 0.228, 0.292, 0.356, 0.421, 0.485, 0.550, 0.614, 0.678, 0.743, 0.807, 0.871, 0.936, 1.000]
+        )
+        (annealer): LoTDAnnealer()
+      )
+      (decoder): FCBlock(
+        (layers): ModuleList(
+          (0): DenseLayer(
+            in_features=34, out_features=64, bias=True, equal_lr=False
+            (activation): Softplus(beta=100.0, threshold=20)
+          )
+          (1): DenseLayer(in_features=64, out_features=1, bias=True, equal_lr=False)
+        )
+      )
+    )
+    (radiance_net): RadianceNet(
+      (embed_fn): Identity()
+      (embed_fn_view): SHEncoder: input_dim=3, output_dim=16, degree=4
+      (embed_fn_nablas): Identity()
+      (embed_fn_h_extra): Identity()
+      (embed_fn_appear): Identity()
+      (blocks): FCBlock(
+        (layers): ModuleList(
+          (0): DenseLayer(
+            in_features=60, out_features=64, bias=True, equal_lr=False
+            (activation): ReLU(inplace=True)
+          )
+          (1): DenseLayer(
+            in_features=64, out_features=64, bias=True, equal_lr=False
+            (activation): ReLU(inplace=True)
+          )
+          (2): DenseLayer(
+            in_features=64, out_features=3, bias=True, equal_lr=False
+            (activation): Sigmoid()
+          )
+        )
+      )
+    )
+    (ctrl_var): VarSingleMixLinear()
+    (accel): OccupancyGridAS(
+      (space): AABBSpace(
+        aabb=tensor([[-12.0451, -71.4550, -34.6469],
+                [165.4693,  65.6519,  19.7255]], device='cuda:0')
+      )
+      (occ): OccupancyGridEMA()
+    )
+  )
+  (LoTDNeRFDistant#Distant#segment-10061305430875486848_1080_000_1100_000_with_camera_labels#distant): LoTDNeRFDistant(
+    (encoding): LoTDEncoding(
+      (space): AABBSpace(
+        aabb=tensor([[-12.0451, -71.4550, -34.6469],
+                [165.4693,  65.6519,  19.7255]], device='cuda:0')
+      )
+      (lotd): LoTD(
+        in_dim=4, out_dim=32, num_levels=16, num_params=16006784, params_size=30.531 MiB, device=cuda:0, dtype=torch.float16
+        lod_res=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        lod_res_multi_dim=[[53, 41, 16, 4], [73, 56, 23, 6], [100, 78, 31, 8], [138, 107, 43, 11], [191, 148, 59, 15], [264, 204, 81, 21], [364, 282, 112, 28], [503, 389, 155, 39], [696, 537, 213, 54], [961, 742, 295, 74], [1328, 1026, 407, 102], [1835, 1418, 562, 141], [2536, 1959, 777, 195], [3505, 2707, 1074, 269], [4843, 3741, 1484, 371], [6693, 5170, 2050, 513]]
+        lod_n_feats=[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+        lod_types=['Dense', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash', 'Hash']
+        lod_n_params=[278144, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576, 1048576]
+        lod_n_params_cumsum=[278144, 1326720, 2375296, 3423872, 4472448, 5521024, 6569600, 7618176, 8666752, 9715328, 10763904, 11812480, 12861056, 13909632, 14958208, 16006784]
+        lod_n_params_ratio=[0.017, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066, 0.066]
+        lod_n_params_cumsum_ratio=[0.017, 0.083, 0.148, 0.214, 0.279, 0.345, 0.410, 0.476, 0.541, 0.607, 0.672, 0.738, 0.803, 0.869, 0.934, 1.000]
+      )
+    )
+    (extra_embed_fn): Identity()
+    (sigma_decoder): FCBlock(
+      (layers): ModuleList(
+        (0): DenseLayer(
+          in_features=36, out_features=64, bias=True, equal_lr=False
+          (activation): ReLU(inplace=True)
+        )
+        (1): DenseLayer(
+          in_features=64, out_features=1, bias=True, equal_lr=False
+          (activation): Softplus(beta=1, threshold=20)
+        )
+      )
+    )
+    (rgb_decoder): RadianceNet(
+      (embed_fn_h_extra): Identity()
+      (embed_fn_appear): Identity()
+      (blocks): FCBlock(
+        (layers): ModuleList(
+          (0): DenseLayer(
+            in_features=36, out_features=64, bias=True, equal_lr=False
+            (activation): ReLU(inplace=True)
+          )
+          (1): DenseLayer(
+            in_features=64, out_features=64, bias=True, equal_lr=False
+            (activation): ReLU(inplace=True)
+          )
+          (2): DenseLayer(
+            in_features=64, out_features=3, bias=True, equal_lr=False
+            (activation): Sigmoid()
+          )
+        )
+      )
+    )
+  )
+  (SimpleSky#Sky#segment-10061305430875486848_1080_000_1100_000_with_camera_labels#sky): SimpleSky(
+    (embed_fn_view): FreqEncoder: input_dim=3, output_dim=63, n_frequencies=10 
+    (embed_fn_appear): Identity()
+    (blocks): FCBlock(
+      (layers): ModuleList(
+        (0): DenseLayer(
+          in_features=67, out_features=256, bias=True, equal_lr=False
+          (activation): ReLU(inplace=True)
+        )
+        (1): DenseLayer(
+          in_features=256, out_features=256, bias=True, equal_lr=False
+          (activation): ReLU(inplace=True)
+        )
+        (2): DenseLayer(
+          in_features=256, out_features=3, bias=True, equal_lr=False
+          (activation): Sigmoid()
+        )
+      )
+    )
+  )
+  (ImageEmbeddings#segment-10061305430875486848_1080_000_1100_000_with_camera_labels): ImageEmbeddings(
+    (exposures): ModuleDict()
+    (camera_FRONT): Embedding(163, 4)
+    (camera_FRONT_LEFT): Embedding(163, 4)
+    (camera_FRONT_RIGHT): Embedding(163, 4)
+  )
+  (LearnableParams#segment-10061305430875486848_1080_000_1100_000_with_camera_labels): LearnableParams(
+    (ego_motion): ModuleDict(
+      (camera_FRONT): TransformRT(
+        (subattr): ModuleDict(
+          (rot): RotationQuaternionRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): RotationQuaternion(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_4(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+          (trans): TranslationRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): Translation(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_3(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+        )
+      )
+      (camera_FRONT_LEFT): TransformRT(
+        (subattr): ModuleDict(
+          (rot): RotationQuaternionRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): RotationQuaternion(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_4(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+          (trans): TranslationRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): Translation(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_3(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+        )
+      )
+      (camera_FRONT_RIGHT): TransformRT(
+        (subattr): ModuleDict(
+          (rot): RotationQuaternionRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): RotationQuaternion(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_4(tensor.shape=[163] x [4], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+          (trans): TranslationRefinedAdd(
+            (subattr): ModuleDict(
+              (attr0): Translation(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=False)
+              (delta): Mat_3(tensor.shape=[163] x [3], device=cuda:0, dtype=torch.float32, learnable=True)
+            )
+          )
+        )
+      )
+    )
+  )
+)

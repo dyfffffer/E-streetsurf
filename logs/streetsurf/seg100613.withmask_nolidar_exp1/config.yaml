@@ -1,0 +1,495 @@
+device_ids:
+- 0
+num_rays_pixel: 8192
+hw_image_patch:
+- 80
+- 120
+near: 0.1
+far: 200.0
+depth_max: 120.0
+extend_size: 60.0
+num_coarse: 128
+step_size: 0.2
+upsample_inv_s: 64.0
+upsample_inv_s_factors:
+- 1.0
+- 4.0
+- 16.0
+num_fine:
+- 8
+- 8
+- 32
+radius_scale_min: 1
+radius_scale_max: 1000
+distant_interval_type: inverse_proportional
+distant_mode: fixed_cuboid_shells
+distant_nsample: 64
+sdf_scale: 25.0
+rgb_fn: l1
+rgb_fn_param: {}
+w_mask: 0.3
+num_uniform: 65536
+w_nor_l1: 0.02
+w_nor_cos: 0.01
+erode: 8
+mono_fn: l2
+mono_w: 0.0001
+mono_w_reg: 1.0e-06
+mono_after: 1000
+mono_scales: 4
+dep_thre: 0.5
+nor_thre: 0.5
+nor_mode: crdv
+w_eikonal: 0.01
+on_render_ratio: 0.5
+on_occ_ratio: 1.0
+on_render_type: both
+safe_mse: true
+errlim: 5
+w_sparsity: 0.002
+sparsity_anneal_for: 1000
+sparsity_enable_after: 0
+clbeta: 10.0
+clw: 0.2
+clearance_sdf: 0.02
+num_iters: 12000
+warmup_steps: 1500
+min_factor: 0.06
+fglr: 0.01
+bglr: 0.01
+skylr: 0.001
+emblr: 0.02
+image_embedding_dim: 4
+start_it: 0
+start_level: 2
+stop_it: 3000
+final_inv_s: 2400.0
+ctrl_start: 2000
+lnini: 0.3
+use_estimate_alpha: false
+geo_init_method: pretrain_after_zero_out
+camera_list:
+- camera_FRONT_LEFT
+- camera_FRONT
+- camera_FRONT_RIGHT
+exp_dir: logs/streetsurf/seg100613.withmask_nolidar_exp1
+dataset_cfg:
+  target: dataio.autonomous_driving.WaymoDataset
+  param:
+    root: /home/dengyufei/DATA/StreetSurfDemo
+    rgb_dirname: images
+    lidar_dirname: lidars
+    mask_dirname: masks
+    rgb_mono_depth_dirname: depths
+    rgb_mono_normals_dirname: normals
+scenebank_cfg:
+  scenarios:
+  - segment-10061305430875486848_1080_000_1100_000_with_camera_labels, 0, 163
+  observer_cfgs:
+    Camera:
+      list:
+      - camera_FRONT_LEFT
+      - camera_FRONT
+      - camera_FRONT_RIGHT
+  on_load:
+    no_objects: true
+    joint_camlidar: true
+    align_orientation: true
+    consider_distortion: true
+    joint_camlidar_equivalent_extr: true
+test_scenebank_cfg:
+  scenarios:
+  - segment-10061305430875486848_1080_000_1100_000_with_camera_labels, 0, 163
+  on_load:
+    no_objects: true
+    joint_camlidar: true
+    align_orientation: true
+    consider_distortion: true
+    joint_camlidar_equivalent_extr: true
+  observer_cfgs:
+    Camera:
+      list:
+      - camera_FRONT_LEFT
+      - camera_FRONT
+      - camera_FRONT_RIGHT
+    RaysLidar:
+      list:
+      - lidar_TOP
+      - lidar_FRONT
+      - lidar_REAR
+      - lidar_SIDE_LEFT
+      - lidar_SIDE_RIGHT
+assetbank_cfg:
+  Street:
+    model_class: app.models.single.LoTDNeuSStreet
+    model_params:
+      dtype: half
+      var_ctrl_cfg:
+        ln_inv_s_init: 0.3
+        ln_inv_s_factor: 10.0
+        ctrl_type: mix_linear
+        start_it: 2000
+        stop_it: 12000
+        final_inv_s: 2400.0
+      cos_anneal_cfg: null
+      surface_cfg:
+        sdf_scale: 25.0
+        encoding_cfg:
+          lotd_use_cuboid: true
+          lotd_auto_compute_cfg:
+            type: ngp
+            target_num_params: 33554432
+            min_res: 16
+            n_feats: 2
+            log2_hashmap_size: 20
+            max_num_levels: null
+          param_init_cfg:
+            method: uniform_to_type
+            bound: 0.0001
+          anneal_cfg:
+            type: hardmask
+            start_it: 0
+            start_level: 2
+            stop_it: 3000
+        decoder_cfg:
+          type: mlp
+          D: 1
+          W: 64
+          activation:
+            type: softplus
+            beta: 100.0
+        n_rgb_used_output: 0
+        geo_init_method: pretrain_after_zero_out
+      radiance_cfg:
+        use_pos: true
+        use_view_dirs: true
+        dir_embed_cfg:
+          type: spherical
+          degree: 4
+        D: 2
+        W: 64
+        n_appear_embedding: 4
+      use_tcnn_backend: false
+      accel_cfg:
+        type: occ_grid
+        vox_size: 1.0
+        occ_val_fn_cfg:
+          type: sdf
+          inv_s: 256.0
+        occ_thre: 0.3
+        ema_decay: 0.95
+        init_cfg:
+          mode: from_net
+          num_steps: 4
+          num_pts: 1048576
+        acquire_from_net_cfg:
+          num_steps: 4
+          num_pts: 1048576
+        acquire_from_samples_cfg: {}
+        n_steps_between_update: 16
+        n_steps_warmup: 256
+      ray_query_cfg:
+        query_mode: march_occ_multi_upsample_compressed
+        query_param:
+          nablas_has_grad: true
+          num_coarse: 128
+          num_fine:
+          - 8
+          - 8
+          - 32
+          coarse_step_cfg:
+            step_mode: linear
+          march_cfg:
+            step_size: 0.2
+            max_steps: 4096
+          upsample_inv_s: 64.0
+          upsample_inv_s_factors:
+          - 1.0
+          - 4.0
+          - 16.0
+          upsample_use_estimate_alpha: false
+    asset_params:
+      initialize_cfg:
+        target_shape: road_surface
+        obs_ref: camera_FRONT
+        lr: 0.001
+        num_iters: 1000
+        num_points: 262144
+        w_eikonal: 0.003
+        floor_dim: z
+        floor_up_sign: 1
+        ego_height: 2.0
+      preload_cfg: {}
+      populate_cfg:
+        extend_size: 60.0
+  Distant:
+    model_class: app.models.single.LoTDNeRFDistant
+    model_params:
+      dtype: half
+      encoding_cfg:
+        input_ch: 4
+        lotd_use_cuboid: true
+        lotd_auto_compute_cfg:
+          type: ngp4d
+          target_num_params: 16777216
+          min_res_xyz: 16
+          min_res_w: 4
+          n_feats: 2
+          log2_hashmap_size: 19
+          per_level_scale: 1.382
+        param_init_cfg:
+          method: uniform_to_type
+          bound: 0.0001
+      extra_pos_embed_cfg:
+        type: identity
+      sigma_decoder_cfg:
+        type: mlp
+        D: 1
+        W: 64
+        output_activation: softplus
+      radiance_decoder_cfg:
+        use_pos: false
+        use_view_dirs: false
+        use_nablas: false
+        D: 2
+        W: 64
+        n_appear_embedding: 4
+      n_rgb_used_output: 0
+      use_tcnn_backend: false
+      include_inf_distance: false
+      radius_scale_min: 1
+      radius_scale_max: 1000
+      ray_query_cfg:
+        query_mode: march_occ
+        query_param:
+          march_cfg:
+            interval_type: inverse_proportional
+            sample_mode: fixed_cuboid_shells
+            max_steps: 64
+    asset_params:
+      populate_cfg:
+        cr_obj_classname: Street
+  Sky:
+    model_class: app.models.env.SimpleSky
+    model_params:
+      dir_embed_cfg:
+        type: sinusoidal
+        n_frequencies: 10
+        use_tcnn_backend: false
+      D: 2
+      W: 256
+      use_tcnn_backend: false
+      n_appear_embedding: 4
+  ImageEmbeddings:
+    model_class: app.models.scene.ImageEmbeddings
+    model_params:
+      dims: 4
+      weight_init: uniform
+      weight_init_std: 0.0001
+  LearnableParams:
+    model_class: app.models.scene.LearnableParams
+    model_params:
+      refine_ego_motion: true
+      ego_class_name: Camera
+      refine_camera_intr: false
+      refine_camera_extr: false
+      enable_after: 500
+renderer:
+  common:
+    with_env: true
+    with_rgb: true
+    with_normal: true
+    near: 0.1
+    far: 200.0
+  train:
+    depth_use_normalized_vw: false
+    perturb: true
+  val:
+    depth_use_normalized_vw: true
+    perturb: false
+    rayschunk: 4096
+training:
+  dataloader:
+    preload: false
+    preload_on_gpu: false
+    tags:
+      camera:
+        downscale: 1
+        list:
+        - camera_FRONT_LEFT
+        - camera_FRONT
+        - camera_FRONT_RIGHT
+      rgb_mask: {}
+      rgb_human_mask: {}
+      rgb_ignore_mask:
+        ignore_not_occupied: false
+        ignore_dynamic: false
+        ignore_human: true
+      rgb_mono_depth: {}
+      rgb_mono_normals: {}
+    pixel_dataset:
+      joint: false
+      equal_mode: ray_batch
+      num_rays: 8192
+      frame_sample_mode: uniform
+      pixel_sample_mode: error_map
+      error_map_res:
+      - 32
+      - 32
+      uniform_sampling_fraction: 0.5
+    image_patch_dataset:
+      HW:
+      - 80
+      - 120
+      random_shift: true
+      random_scale: false
+      scale: 1.0
+      camera_sample_mode: uniform
+      frame_sample_mode: uniform
+  val_dataloader:
+    preload: false
+    tags:
+      camera:
+        downscale: 4
+        list:
+        - camera_FRONT_LEFT
+        - camera_FRONT
+        - camera_FRONT_RIGHT
+      rgb_mask: {}
+      rgb_human_mask: {}
+      rgb_ignore_mask:
+        ignore_not_occupied: false
+        ignore_dynamic: false
+        ignore_human: true
+      rgb_mono_depth: {}
+      rgb_mono_normals: {}
+    image_dataset:
+      camera_sample_mode: all_list
+      frame_sample_mode: uniform
+  uniform_sample: 65536
+  losses:
+    rgb:
+      fn_type: l1
+      fn_param: {}
+      respect_ignore_mask: true
+    mono_normals:
+      distant_mode: crdv
+      w_l1: 0.02
+      w_cos: 0.01
+      ignore_mask_list:
+      - pred_not_occupied
+      - human
+      - not_occupied
+      mask_pred_thresh: 0.5
+      apply_in_pixel_train_step: false
+    mono_depth:
+      w: 0.0001
+      fn_type: l2
+      w_grad_reg: 1.0e-06
+      distant_mode: cr_only
+      gt_pre_scale: 80.0
+      gt_pre_shift: 1.0
+      ignore_mask_list:
+      - pred_not_occupied
+      - human
+      - not_occupied
+      mask_pred_thresh: 0.5
+      mask_erode: 8
+      grad_reg_scales: 4
+      enable_after: 1000
+      detach_scale_shift: false
+      scale_gt_to_pred: false
+    occupancy_mask:
+      w: 0.3
+      w_on_errmap: 0
+      safe_bce: true
+      pred_clip: 0
+    mask_entropy:
+      w: 0.005
+      mode: crisp_cr
+      enable_after: 1500
+      anneal:
+        type: linear
+        start_it: 1500
+        stop_it: 4500
+        start_val: 0
+        stop_val: 0.005
+        update_every: 100
+    eikonal:
+      safe_mse: true
+      safe_mse_err_limit: 5
+      alpha_reg_zero: 0
+      on_occ_ratio: 1.0
+      on_render_type: both
+      on_render_ratio: 0.5
+      class_name_cfgs:
+        Street:
+          w: 0.01
+    sparsity:
+      enable_after: 0
+      class_name_cfgs:
+        Street:
+          key: sdf
+          type: normalized_logistic_density
+          inv_scale: 16.0
+          w: 0.002
+          anneal:
+            type: linear
+            start_it: 0
+            start_val: 0
+            stop_it: 1000
+            stop_val: 0.002
+            update_every: 100
+    clearance:
+      class_name_cfgs:
+        Street:
+          w: 0.2
+          beta: 10.0
+          thresh: 0.02
+    weight_reg:
+      class_name_cfgs:
+        Street:
+          norm_type: 2.0
+          w: 1.0e-06
+        Distant:
+          norm_type: 2.0
+          w: 1.0e-06
+  optim:
+    default: 0.001
+    Sky: 0.001
+    Distant:
+      lr: 0.01
+      eps: 1.0e-15
+      betas:
+      - 0.9
+      - 0.99
+    Street:
+      lr: 0.01
+      eps: 1.0e-15
+      betas:
+      - 0.9
+      - 0.991
+      invs_betas:
+      - 0.9
+      - 0.999
+    ImageEmbeddings: 0.02
+    LearnableParams:
+      ego_motion:
+        lr: 0.001
+        alpha_lr_rotation: 0.05
+  num_iters: 12000
+  scheduler:
+    type: exponential_step
+    num_iters: 12000
+    min_factor: 0.06
+    warmup_steps: 1500
+  i_val: 1500
+  i_backup: -1
+  i_save: 900
+  i_log: 20
+  log_grad: false
+  log_param: false
+  ckpt_file: null
+  ckpt_ignore_keys: []
+  ckpt_only_use_keys: null
+port: null

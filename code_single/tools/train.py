@@ -846,7 +846,7 @@ class Trainer(nn.Module):
                     model.val(scene=None, obj=None, it=it, logger=logger, log_prefix=f"validate_camera.{class_name}")
 
 def main_function(args: ConfigDict):
-    exp_dir = args.exp_dir
+    exp_dir = args.exp_dir  # 存储实验Log的地方
     os.makedirs(exp_dir, exist_ok=True)
     
     if args.get('wait_for', None) is not None:
@@ -854,7 +854,7 @@ def main_function(args: ConfigDict):
         wait_for_pid(int(args.wait_for))
 
     seed = args.get('seed', 42)
-    init_env(args, seed=seed)
+    init_env(args, seed=seed)  # 初始化环境 根据输入的参数和条件设置不同的分布式训练；然后设置RANK、LOCAL_RANK、WORLD_SIZE，这部分好像在nerfstudio也见到了
 
     #----------------------------
     #-------- Shortcuts ---------
@@ -863,6 +863,7 @@ def main_function(args: ConfigDict):
     world_size = get_world_size()
     device = torch.device('cuda', local_rank)
     
+    # 根据输入参数args.training中的设置，计算了一些训练中的指标。这些指标用于控制训练过程中的备份、验证、保存、日志记录的频率
     i_backup = int(args.training.i_backup // world_size) if args.training.i_backup > 0 else -1
     i_val = int(args.training.i_val // world_size) if args.training.i_val > 0 else -1
     i_save = int(args.training.i_save) if args.training.i_save > 0 else -1
@@ -900,14 +901,17 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #-----------     Scene Bank     --------------
     #---------------------------------------------
+    # 数据读入，要改
     dataset_impl: DatasetIO = import_str(args.dataset_cfg.target)(args.dataset_cfg.param)
     asset_bank = AssetBank(args.assetbank_cfg)
     
     scene_bank: IDListedDict[Scene] = IDListedDict()
-    scenebank_root = os.path.join(args.exp_dir, 'scenarios')
-    if is_master():
+    scenebank_root = os.path.join(args.exp_dir, 'scenarios')  # 根据exp_dir创建一个场景根目录
+    if is_master():  # 在主进程
         log.info("=> Creating scene_bank...")
-        scene_bank, _ = create_scene_bank(
+        # 根据输入的数据创建场景bank
+        # IDListedDict[Scene]是存储多个scene的list，每个scene是一个dict，存储每一个场景的相关信息
+        scene_bank, _ = create_scene_bank(  
             dataset=dataset_impl, device=device, 
             scenebank_cfg=args.scenebank_cfg, 
             drawable_class_names=asset_bank.class_name_configs.keys(),
@@ -915,7 +919,8 @@ def main_function(args: ConfigDict):
             scenebank_root=scenebank_root
         )
         log.warning("=> Done creating scene_bank.")
-    if world_size > 1:
+    
+    if world_size > 1:  # 如果多进程
         dist.barrier()
     if not is_master():
         scene_bank, _ = load_scene_bank(scenebank_root, device=device)
@@ -923,7 +928,9 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #------------     Renderer     ---------------
     #---------------------------------------------
+    # 渲染 要改
     renderer = SingleVolumeRenderer(args.renderer)
+    # 渲染网络要训练，训练用的是forward和render吗
     renderer.train()
     for scene in scene_bank:
         # NOTE: When training, set all observer's near&far to a larger value
@@ -934,6 +941,7 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #-----------     Asset Bank     --------------
     #---------------------------------------------
+    # 创建一个资产库，包含一些权重和其他训练需要的数据
     asset_bank.create_asset_bank(scene_bank, optim_cfg=args.training.optim, device=device)
     asset_bank.to(device)
     # log.info(asset_bank)
@@ -1334,7 +1342,5 @@ def make_parser():
     return bc
 
 if __name__ == "__main__":
-    bc = make_parser()
-    print(bc)
-    
-    main_function(bc.parse(print_config=False))
+    bc = make_parser()   # 命令行参数：--config:yaml  --resume_dir:experiment to load/resume  
+    main_function(bc.parse(print_config=False))  # 这里改成Ture会打印yaml里面的参数

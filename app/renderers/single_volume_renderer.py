@@ -27,9 +27,9 @@ class SingleVolumeRenderer(nn.Module):
     def __init__(self, config: ConfigDict):
         super().__init__()
         self.training = False
-        common = config.common.copy()
+        common = config.common.copy()  # 这里涉及一个near（0.1） far（200）的划分，可能是用于光线查询
         train = config.get('train', ConfigDict()).copy()
-        train.update(common)
+        train.update(common)           # 这里有个是否使用归一化的深度的设置
         val = config.get('val', ConfigDict()).copy()
         val.update(common)
         self._config = val
@@ -41,6 +41,7 @@ class SingleVolumeRenderer(nn.Module):
     def config(self):
         return self._config_train if self.training else self._config
 
+    # 用于为渲染器添加图像后处理器（image post-processor），根据配置启用或禁用后处理器。
     def populate(self, asset_bank: AssetBank):
         if self.config.get("enable_postprocessor", False):
             self.image_postprocessor = asset_bank["ImagePostprocessor"]
@@ -111,13 +112,18 @@ class SingleVolumeRenderer(nn.Module):
             rendered['feature_volume'] = torch.zeros([*prefix, with_feature_dim], dtype=dtype, device=device)
         return rendered
 
+    '''
+    产生体素渲染结果
+    '''
     @profile
     def forward(
         self, 
+        # 起点 方向 水平垂直坐标 光线帧索引（是什么）
         rays_o: torch.Tensor, rays_d: torch.Tensor, rays_xy: torch.Tensor = None, rays_fi: torch.Tensor = None, 
         *,
         scene: Scene, observer: Union[Camera, MultiCamBundle, Lidar, RaysLidar, MultiRaysLidarBundle]=None, 
-        # ray_query_config
+        # 以下是ray_query_config 光线查询设置
+        # near far 光线投射的近和远裁剪平面。bypass_ray_query_cfg 绕过光线查询配置的选项
         near=None, far=None, bypass_ray_query_cfg = ConfigDict(), 
         with_rgb: bool=None, with_normal: bool=None, with_feature_dim: int=None, only_cr: bool=False, with_env: bool=None, 
         return_buffer=False, return_details=False, render_per_obj=False, render_per_obj_in_total=False):
@@ -125,6 +131,7 @@ class SingleVolumeRenderer(nn.Module):
         assert rays_o.dim() == rays_d.dim() == 2, "rays_o and rays_d should have size of [N, 3]"
 
         objs = scene.get_drawable_groups_by_class_name(scene.main_class_name)
+        # main_class_name是什么，根据这个场景的main_class_name返回一个对象字典，返回的这个对象字典是什么
         sky_objs = scene.get_drawable_groups_by_class_name('Sky') if not only_cr else []
         distant_objs = scene.get_drawable_groups_by_class_name('Distant') if not only_cr else []
         
@@ -146,6 +153,7 @@ class SingleVolumeRenderer(nn.Module):
         #----------------------------------------------------
         #                 Prepare outputs
         #----------------------------------------------------
+        # 提取ray的一些参数，根据ray大小准备ray_sample、render的空间
         total_num_rays = rays_o.shape[0]
         raw_per_obj_model = dict()
         total_num_samples_per_ray = torch.zeros(total_num_rays, dtype=torch.long, device=device)
@@ -177,14 +185,17 @@ class SingleVolumeRenderer(nn.Module):
         cr_ret = None
         cr_ray_tested = None
         cr_volume_buffer = None
-        if len(objs) > 0:
-            with profile("Query foreground model"):
+        if len(objs) > 0: # 当字典中有内容
+            with profile("Query foreground model"):  # with progfile标记这段代码的执行时间
                 cr_obj = objs[0]
                 cr_model = cr_obj.model
+                # 把世界坐标系下的射线坐标(rays_o, rays_d, cr_obj)转换成物体局部坐标系下
                 cr_rays_o, cr_rays_d = scene.convert_rays_in_node(rays_o, rays_d, cr_obj)
+                # 近景nerf的输入
                 cr_ray_input = dict(
                     rays_o=cr_rays_o, rays_d=cr_rays_d, near=near, far=far,
                     rays_fi=rays_fi, rays_xy=rays_xy, rays_h_appear_embed=h_image_embed)
+                # 下面返回的是什么？？
                 cr_ray_tested = cr_model.ray_test(**cr_ray_input)
                 ray_query_config = ConfigDict(**cr_model.ray_query_cfg, **config)
                 ray_query_config.update(with_rgb=with_rgb, with_normal=with_normal, with_feature_dim=with_feature_dim) # Possible override
@@ -278,7 +289,7 @@ class SingleVolumeRenderer(nn.Module):
         #            Make total voloume buffer
         #----------------------------------------------------
         with profile("Merge volume buffers"):
-            if cr_volume_buffer is not None and dv_volume_buffer is not None:
+            if cr_volume_buffer is not None and dv_volume_buffer is not None:   # 这两个的输出是什么
                 #---------- Merge two buffers (cr+dv)
                 total_ray_inds_hit = total_num_samples_per_ray.nonzero().long()[..., 0]
                 pidx_dv, pidx_cr, total_pack_infos = merge_two_packs_sorted(
