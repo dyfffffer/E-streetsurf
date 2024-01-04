@@ -69,9 +69,7 @@ lnini: 0.3
 use_estimate_alpha: false
 geo_init_method: pretrain_after_zero_out
 camera_list:
-- camera_FRONT_LEFT
 - camera_FRONT
-- camera_FRONT_RIGHT
 exp_dir: logs/streetsurf/seg100613.withmask_nolidar_exp1
 dataset_cfg:
   target: dataio.autonomous_driving.WaymoDataset
@@ -88,9 +86,7 @@ scenebank_cfg:
   observer_cfgs:
     Camera:
       list:
-      - camera_FRONT_LEFT
       - camera_FRONT
-      - camera_FRONT_RIGHT
   on_load:
     no_objects: true
     joint_camlidar: true
@@ -109,9 +105,7 @@ test_scenebank_cfg:
   observer_cfgs:
     Camera:
       list:
-      - camera_FRONT_LEFT
       - camera_FRONT
-      - camera_FRONT_RIGHT
     RaysLidar:
       list:
       - lidar_TOP
@@ -316,9 +310,7 @@ training:
       camera:
         downscale: 1
         list:
-        - camera_FRONT_LEFT
         - camera_FRONT
-        - camera_FRONT_RIGHT
       rgb_mask: {}
       rgb_human_mask: {}
       rgb_ignore_mask:
@@ -352,9 +344,7 @@ training:
       camera:
         downscale: 4
         list:
-        - camera_FRONT_LEFT
         - camera_FRONT
-        - camera_FRONT_RIGHT
       rgb_mask: {}
       rgb_human_mask: {}
       rgb_ignore_mask:

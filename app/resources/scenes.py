@@ -82,7 +82,7 @@ class Scene(object):
         self.drawable_groups_by_class_name: Dict[str, IDListedDict[SceneNode]] = {}
         self.drawable_groups_by_model_id: Dict[str, IDListedDict[SceneNode]] = {}
         
-        self.observers: IDListedDict[OBSERVER_TYPE] = IDListedDict()
+        self.observers: IDListedDict[OBSERVER_TYPE] = IDListedDict()   # 存储相机参数
         self.observer_groups_by_class_name: Dict[str, IDListedDict[OBSERVER_TYPE]] = {}
         
         self.all_nodes: IDListedDict[SceneNode] = IDListedDict([self.root])

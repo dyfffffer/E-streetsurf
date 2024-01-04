@@ -19,6 +19,7 @@ set_env(2)
 import os
 import sys
 import time
+import pdb
 import numpy as np
 from tqdm import tqdm
 from typing import Dict, Literal, List, Tuple
@@ -928,23 +929,26 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #------------     Renderer     ---------------
     #---------------------------------------------
-    # 渲染 要改
+    # 初始化渲染器 要改
     renderer = SingleVolumeRenderer(args.renderer)
-    # 渲染网络要训练，训练用的是forward和render吗
+    # 渲染网络要训练，这里的train用的是torch中的trian,设置模块（Module）处于训练模式
     renderer.train()
+    
+    # 修改scene对应相机中的near和far参数，
     for scene in scene_bank:
         # NOTE: When training, set all observer's near&far to a larger value
         for obs in scene.observers.values():
-            obs.near = renderer.config.near # NOTE: Modify scene_bank observers in advance
-            obs.far = renderer.config.far
+            obs.near = renderer.config.near # NOTE: Modify scene_bank observers in advance  0.1
+            obs.far = renderer.config.far  # 200
 
     #---------------------------------------------
     #-----------     Asset Bank     --------------
     #---------------------------------------------
-    # 创建一个资产库，包含一些权重和其他训练需要的数据
+    # 创建一个资产库，包含了不同场景的不同表示(SDF)
     asset_bank.create_asset_bank(scene_bank, optim_cfg=args.training.optim, device=device)
     asset_bank.to(device)
     # log.info(asset_bank)
+
     if is_master():
         model_txt = os.path.join(exp_dir, 'model.txt')
         with open(model_txt, 'w') as f:
@@ -961,11 +965,13 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #------------     Optimizer     --------------
     #---------------------------------------------
+    # 神经网络训练的优化器设置
     optimizer = optim.Adam(asset_bank.param_groups)
     optimizer.param_groups[0]['capturable'] = False
-    print(optimizer.param_groups[0]['capturable'])
+    # print(optimizer.param_groups[0]['capturable'])
 
     asset_bank.configure_clip_grad_group(scene_bank, args.training.get('clip_grad_val', None))
+   
     
     #---------------------------------------------
     #-------------     Dataset     ---------------
@@ -978,22 +984,31 @@ def main_function(args: ConfigDict):
     def cycle(dataloader):
         epoch_idx = 0
         while True:
-            for (s,g) in dataloader:
-                yield s, g
+            for (s,g) in dataloader:  # s,g代表每次迭代得到的样本数据和对应的标签
+                yield s, g            # 关键字生成
+                print("\33[33mcycle：")
+                print("epoch_idx:",epoch_idx)
+                
+                print("s:",s)
+                print("g:",g)
             epoch_idx += 1
             if args.ddp:
                 dataloader.dataset.sampler.set_epoch(epoch_idx)
     
+    # 采样器参数
     sampler_kwargs = {'scene_sample_mode': 'weighted_by_len', 
                      'ddp': args.ddp, 'seed': seed, 'drop_last': False}
-    if params:=args.training.dataloader.get('pixel_dataset', None):
+
+    if params:=args.training.dataloader.get('pixel_dataset', None): # 如果存在像素数据集
         params = params.copy()
         joint = params.pop('joint', False)
         if not joint:
-            pixel_dataset = PixelDataset(scene_dataloader_train, **params, **sampler_kwargs)
+            pixel_dataset = PixelDataset(scene_dataloader_train, **params, **sampler_kwargs) # 进行了一个采样
         else:
             pixel_dataset = JointFramePixelDataset(scene_dataloader_train, **params, **sampler_kwargs)
         pixel_dataloader_cyc = cycle(pixel_dataset.get_dataloader())
+        
+
     else:
         pixel_dataset = None
         pixel_dataloader_cyc = None
@@ -1055,7 +1070,7 @@ def main_function(args: ConfigDict):
     #---------     Training tools     ------------
     #---------------------------------------------
     # Build scheduler
-    scheduler = get_scheduler(args.training.scheduler, optimizer, last_epoch=it-1)
+    scheduler = get_scheduler(args.training.scheduler, optimizer, last_epoch=it-1)  # 根据配置参数和优化器获取相应的学习率调度器
     trainer = Trainer(
         config=args.training, renderer=renderer, asset_bank=asset_bank, scene_bank=scene_bank, 
         dataset=scene_dataloader_train, pixel_dataset=pixel_dataset, device_ids=args.device_ids, 

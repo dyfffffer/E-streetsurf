@@ -187,13 +187,13 @@ def create_scene_bank(
         scene = load_scene(scenario, device=device)
         scenario_list.append(scenario)
         scene_bank.append(scene)
-        print("\033[35mscene")
-        print(scene.i)
-        print(scene.n_frames)
-        print(scene.data_frame_offset)
-        print(scene.learnable_params)
-        print(scene.image_embeddings)
-        print("\033[0m")
+        # print("\033[35mscene")
+        # print(scene.i)
+        # print(scene.n_frames)
+        # print(scene.data_frame_offset)
+        # print(scene.learnable_params)
+        # print(scene.image_embeddings)
+        # print("\033[0m")
 
 
 

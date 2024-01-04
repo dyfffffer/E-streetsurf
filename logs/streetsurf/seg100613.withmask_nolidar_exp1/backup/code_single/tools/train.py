@@ -19,6 +19,7 @@ set_env(2)
 import os
 import sys
 import time
+import pdb
 import numpy as np
 from tqdm import tqdm
 from typing import Dict, Literal, List, Tuple
@@ -909,7 +910,8 @@ def main_function(args: ConfigDict):
     scenebank_root = os.path.join(args.exp_dir, 'scenarios')  # 根据exp_dir创建一个场景根目录
     if is_master():  # 在主进程
         log.info("=> Creating scene_bank...")
-        # 根据输入的数据创建场景bank，是Tuple[IDListedDict[Scene], dict]
+        # 根据输入的数据创建场景bank
+        # IDListedDict[Scene]是存储多个scene的list，每个scene是一个dict，存储每一个场景的相关信息
         scene_bank, _ = create_scene_bank(  
             dataset=dataset_impl, device=device, 
             scenebank_cfg=args.scenebank_cfg, 
@@ -917,12 +919,9 @@ def main_function(args: ConfigDict):
             misc_node_class_names=asset_bank.misc_node_class_names, 
             scenebank_root=scenebank_root
         )
-
-
-        
         log.warning("=> Done creating scene_bank.")
-    sys.exit()
-    if world_size > 1:
+    
+    if world_size > 1:  # 如果多进程
         dist.barrier()
     if not is_master():
         scene_bank, _ = load_scene_bank(scenebank_root, device=device)
@@ -930,20 +929,26 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #------------     Renderer     ---------------
     #---------------------------------------------
+    # 初始化渲染器 要改
     renderer = SingleVolumeRenderer(args.renderer)
+    # 渲染网络要训练，这里的train用的是torch中的trian,设置模块（Module）处于训练模式
     renderer.train()
+    
+    # 修改scene对应相机中的near和far参数，
     for scene in scene_bank:
         # NOTE: When training, set all observer's near&far to a larger value
         for obs in scene.observers.values():
-            obs.near = renderer.config.near # NOTE: Modify scene_bank observers in advance
-            obs.far = renderer.config.far
+            obs.near = renderer.config.near # NOTE: Modify scene_bank observers in advance  0.1
+            obs.far = renderer.config.far  # 200
 
     #---------------------------------------------
     #-----------     Asset Bank     --------------
     #---------------------------------------------
+    # 创建一个资产库，包含了不同场景的不同表示(SDF)
     asset_bank.create_asset_bank(scene_bank, optim_cfg=args.training.optim, device=device)
     asset_bank.to(device)
     # log.info(asset_bank)
+
     if is_master():
         model_txt = os.path.join(exp_dir, 'model.txt')
         with open(model_txt, 'w') as f:
@@ -960,11 +965,13 @@ def main_function(args: ConfigDict):
     #---------------------------------------------
     #------------     Optimizer     --------------
     #---------------------------------------------
+    # 神经网络训练的优化器设置
     optimizer = optim.Adam(asset_bank.param_groups)
     optimizer.param_groups[0]['capturable'] = False
-    print(optimizer.param_groups[0]['capturable'])
+    # print(optimizer.param_groups[0]['capturable'])
 
     asset_bank.configure_clip_grad_group(scene_bank, args.training.get('clip_grad_val', None))
+   
     
     #---------------------------------------------
     #-------------     Dataset     ---------------
@@ -977,22 +984,29 @@ def main_function(args: ConfigDict):
     def cycle(dataloader):
         epoch_idx = 0
         while True:
-            for (s,g) in dataloader:
-                yield s, g
+            for (s,g) in dataloader:  # s,g代表每次迭代得到的样本数据和对应的标签
+                yield s, g            # 关键字生成
+                print("\33[33mepoch_idx:",epoch_idx)
+                print("s:",s)
+                print("g:",g)
             epoch_idx += 1
             if args.ddp:
                 dataloader.dataset.sampler.set_epoch(epoch_idx)
     
+    # 采样器参数
     sampler_kwargs = {'scene_sample_mode': 'weighted_by_len', 
                      'ddp': args.ddp, 'seed': seed, 'drop_last': False}
-    if params:=args.training.dataloader.get('pixel_dataset', None):
+
+    if params:=args.training.dataloader.get('pixel_dataset', None): # 如果存在像素数据集
         params = params.copy()
         joint = params.pop('joint', False)
         if not joint:
-            pixel_dataset = PixelDataset(scene_dataloader_train, **params, **sampler_kwargs)
+            pixel_dataset = PixelDataset(scene_dataloader_train, **params, **sampler_kwargs) # 进行了一个采样
         else:
             pixel_dataset = JointFramePixelDataset(scene_dataloader_train, **params, **sampler_kwargs)
         pixel_dataloader_cyc = cycle(pixel_dataset.get_dataloader())
+        print("\33[33m2")
+
     else:
         pixel_dataset = None
         pixel_dataloader_cyc = None
@@ -1006,6 +1020,7 @@ def main_function(args: ConfigDict):
     
     if params:=args.training.dataloader.get('image_patch_dataset', None):
         image_patch_dataset = ImagePatchDataset(scene_dataloader_train, **params, **sampler_kwargs)
+        print("\33[33m1")
         image_patch_dataloader_cyc = cycle(image_patch_dataset.get_dataloader())
     else:
         image_patch_dataset = None
@@ -1017,7 +1032,7 @@ def main_function(args: ConfigDict):
     if params:=args.training.val_dataloader.get('image_dataset', None):
         image_val_dataset = ImageDataset(scene_dataloader_val, **params, **sampler_kwargs)
         image_val_dataloader_cyc = cycle(image_val_dataset.get_dataloader())
-    
+    sys.exit()
     #---------------------------------------------
     #----------     Checkpoints     --------------
     #---------------------------------------------

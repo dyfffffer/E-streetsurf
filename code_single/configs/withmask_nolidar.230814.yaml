@@ -81,7 +81,7 @@ use_estimate_alpha: false
 
 geo_init_method: pretrain_after_zero_out # pretrain, pretrain_after_zero_out
 
-camera_list: [camera_FRONT_LEFT, camera_FRONT, camera_FRONT_RIGHT]
+camera_list: [camera_FRONT]
 # camera_list: [camera_SIDE_LEFT, camera_FRONT_LEFT, camera_FRONT, camera_FRONT_RIGHT, camera_SIDE_RIGHT]
 
 #------------------------------------------------------------

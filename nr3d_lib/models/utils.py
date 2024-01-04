@@ -222,13 +222,13 @@ def ExponentialDecaySchedulerLambda(total_steps, decay_base: float = 0.9999, dec
 
 def get_scheduler(config: ConfigDict, optimizer, last_epoch: int=-1):
     stype = config['type']
-    if stype == 'multistep':
+    if stype == 'multistep':  # 根据给定的里程碑调整学习率
         scheduler = optim.lr_scheduler.MultiStepLR(
                 optimizer, 
                 config['milestones'], 
                 gamma=config['gamma'], 
                 last_epoch=last_epoch)
-    elif stype == 'warmupcosine':
+    elif stype == 'warmupcosine':   # 退火的学习率调度器
         # NOTE: This do not support per-parameter lr
         # from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
         # scheduler = CosineAnnealingWarmupRestarts(
@@ -247,7 +247,7 @@ def get_scheduler(config: ConfigDict, optimizer, last_epoch: int=-1):
                 min_factor=config.setdefault('min_factor', 0.1)
             ),
             last_epoch=last_epoch)
-    elif stype == 'exponential_step':
+    elif stype == 'exponential_step':  # 指数步长的学习率调整
         scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
             ExponentialSchedulerLambda(
@@ -256,7 +256,7 @@ def get_scheduler(config: ConfigDict, optimizer, last_epoch: int=-1):
                 min_factor=config.setdefault('min_factor', 0.1)
             )
         )
-    elif stype == 'exponential_decay':
+    elif stype == 'exponential_decay':  # 指数衰减的学习率调整
         scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
             ExponentialDecaySchedulerLambda(
