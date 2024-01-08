@@ -81,7 +81,7 @@ use_estimate_alpha: false
 
 geo_init_method: pretrain_after_zero_out # pretrain, pretrain_after_zero_out
 
-camera_list: [camera_FRONT_LEFT, camera_FRONT, camera_FRONT_RIGHT]
+camera_list: [camera_FRONT]
 # camera_list: [camera_SIDE_LEFT, camera_FRONT_LEFT, camera_FRONT, camera_FRONT_RIGHT, camera_SIDE_RIGHT]
 
 #------------------------------------------------------------
@@ -368,6 +368,7 @@ training:
       camera:
         downscale: 1
         list: ${camera_list}
+      # 去掉mask
       rgb_mask: {}
       rgb_human_mask: {}
       rgb_ignore_mask:
@@ -411,6 +412,7 @@ training:
       camera:
         downscale: 4
         list: ${camera_list}
+      # 去掉mask
       rgb_mask: {}
       rgb_human_mask: {}
       rgb_ignore_mask:
@@ -429,6 +431,7 @@ training:
     rgb: 
       fn_type: ${rgb_fn}
       fn_param: ${rgb_fn_param}
+      # 去掉mask
       respect_ignore_mask: true
     mono_normals:
       # distant_mode: cr_only
