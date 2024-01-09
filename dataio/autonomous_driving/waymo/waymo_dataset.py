@@ -297,38 +297,38 @@ class WaymoDataset(DatasetIO):
         #------------------------------------------------------
         obj_box_list_per_frame = dict()
         obj_box_list_per_frame_dynamic_only = dict()
-        
-        for oid, odict in scenario['objects'].items():
-            o_class_name = odict['class_name']
+        # 删去了读取object的内容
+        # for oid, odict in scenario['objects'].items():
+        #     o_class_name = odict['class_name']
             
-            #---- Scene meta data for objects (bbox list of each frame)
-            obj_box_list_per_frame.setdefault(o_class_name, [[] for _ in range(original_num_frames)])
-            obj_box_list_per_frame_dynamic_only.setdefault(o_class_name, [[] for _ in range(original_num_frames)])
-            for seg in odict['segments']:
-                for seg_local_fi in range(seg['n_frames']):
-                    fi = seg['start_frame'] + seg_local_fi
-                    # transform_in_world (12) + scale (3)
-                    cur_box = np.concatenate([seg['data']['transform'][seg_local_fi][:3, :].reshape(-1), seg['data']['scale'][seg_local_fi]])
-                    obj_box_list_per_frame[o_class_name][fi].append(cur_box)
-                    if oid in scenario['metas']['dynamic_stats'][o_class_name]['is_dynamic']:
-                        obj_box_list_per_frame_dynamic_only[o_class_name][fi].append(cur_box)
+        #     #---- Scene meta data for objects (bbox list of each frame)
+        #     obj_box_list_per_frame.setdefault(o_class_name, [[] for _ in range(original_num_frames)])
+        #     obj_box_list_per_frame_dynamic_only.setdefault(o_class_name, [[] for _ in range(original_num_frames)])
+        #     for seg in odict['segments']:
+        #         for seg_local_fi in range(seg['n_frames']):
+        #             fi = seg['start_frame'] + seg_local_fi
+        #             # transform_in_world (12) + scale (3)
+        #             cur_box = np.concatenate([seg['data']['transform'][seg_local_fi][:3, :].reshape(-1), seg['data']['scale'][seg_local_fi]])
+        #             obj_box_list_per_frame[o_class_name][fi].append(cur_box)
+        #             if oid in scenario['metas']['dynamic_stats'][o_class_name]['is_dynamic']:
+        #                 obj_box_list_per_frame_dynamic_only[o_class_name][fi].append(cur_box)
             
-            if no_objects:
-                continue
+        #     if no_objects:
+        #         continue
             
-            #---- Load objects to scenario
-            if o_class_name not in object_cfgs.keys():
-                # Ignore un-wanted class_names
-                continue
-            cfg = object_cfgs[o_class_name]
-            if cfg.get('dynamic_only', False) and (oid not in scenario['metas']['dynamic_stats'][o_class_name]['is_dynamic']):
-                # Ignore non dynamic objects when set dynamic_only
-                continue
-            odict = clip_node_segments(odict, start, stop)
-            if len(odict['segments']) == 0:
-                # Ignore empty nodes after clip
-                continue
-            new_scene_objects[oid] = odict
+        #     #---- Load objects to scenario
+        #     if o_class_name not in object_cfgs.keys():
+        #         # Ignore un-wanted class_names
+        #         continue
+        #     cfg = object_cfgs[o_class_name]
+        #     if cfg.get('dynamic_only', False) and (oid not in scenario['metas']['dynamic_stats'][o_class_name]['is_dynamic']):
+        #         # Ignore non dynamic objects when set dynamic_only
+        #         continue
+        #     odict = clip_node_segments(odict, start, stop)
+        #     if len(odict['segments']) == 0:
+        #         # Ignore empty nodes after clip
+        #         continue
+        #     new_scene_objects[oid] = odict
         
         for class_name, box_list_per_frame in obj_box_list_per_frame.items():
             box_list_per_frame = [(np.stack(b, axis=0) if len(b) > 0 else []) for b in box_list_per_frame]
