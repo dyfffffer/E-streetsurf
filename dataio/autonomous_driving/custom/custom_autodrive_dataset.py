@@ -10,9 +10,48 @@ from glob import glob
 from typing import Any, Dict, List
 from scipy.spatial.transform import Rotation as R
 
-from nr3d_lib.utils import load_rgb
-from nr3d_lib.config import ConfigDict
+# from nr3d_lib.utils import load_rgb
+import numbers
+import imageio
+import skimage
+from skimage.transform import resize as cpu_resize
+def load_rgb(path: str, downscale: numbers.Number = 1) -> np.ndarray:
+    """ Load image
 
+    Args:
+        path (str): Given image file path
+        downscale (numbers.Number, optional): Optional downscale ratio. Defaults to 1.
+
+    Returns:
+        np.ndarray: [H, W, 3], in range [0,1]
+    """
+    img = imageio.imread(path)
+    img = skimage.img_as_float32(img)
+    if downscale != 1:
+        H, W, _ = img.shape
+        img = cpu_resize(img, (int(H // downscale), int(W // downscale)), anti_aliasing=False)
+    # [H, W, 3]
+    return img
+
+# from nr3d_lib.config import ConfigDict
+import addict
+class ConfigDict(addict.Dict):
+    # Borrowed from https://github.com/open-mmlab/mmcv/blob/master/mmcv/utils/config.py
+    def __missing__(self, name):
+        raise KeyError(name)
+    def __getattr__(self, name):
+        try:
+            value = super().__getattr__(name)
+        except KeyError:
+            ex = AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        except Exception as e:
+            ex = e
+        else:
+            return value
+        raise ex
+
+import sys
+sys.path.append('/home/dengyufei/E-streetsurf')
 from dataio.dataset_io import DatasetIO
 from dataio.utils import clip_node_data, clip_node_segments
 from dataio.autonomous_driving.custom.filter_dynamic import stat_dynamic_objects
@@ -431,12 +470,13 @@ if __name__ == "__main__":
             # scenarios=['2022.08.19_17.58.37_scene'], 
             observer_cfgs=ConfigDict(
                 Camera=ConfigDict(
-                    list=['camera_sv_front', 'camera_sv_left', 
-                          'camera_sv_right', 'camera_sv_rear']
+                    # list=['camera_sv_front', 'camera_sv_left', 
+                    #       'camera_sv_right', 'camera_sv_rear']
+                    list=['camera_sv_left']
                 ), 
-                RaysLidar=ConfigDict(
-                    list=['lidar_middle']
-                ), 
+                # RaysLidar=ConfigDict(
+                #     list=['lidar_middle']
+                # ), 
             ), 
             object_cfgs=ConfigDict(
                 Vehicle=ConfigDict(
@@ -445,7 +485,7 @@ if __name__ == "__main__":
             ), 
             no_objects=False, 
             align_orientation=False, 
-            distortion_model='fisheye'
+            distortion_model='fisheye1'
         )
         dataset = CustomAutoDriveDataset(dataset_cfg_param)
         
@@ -492,7 +532,7 @@ if __name__ == "__main__":
         dataset_cfg = ConfigDict(
             target='dataio.autonomous_driving.CustomAutoDriveDataset', 
             param=ConfigDict(
-                root='/data1/multimodel_data_ailab'
+                root='/home/dengyufei/DATA/E-StreetSurf/image'
             )
         )
         scenebank_cfg = ConfigDict(

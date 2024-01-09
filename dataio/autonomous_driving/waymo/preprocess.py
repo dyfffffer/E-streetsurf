@@ -79,9 +79,11 @@ def process_single_sequence(
         frame0 = next(iter(dataset))
         
         # scene_id = frame0.context.name
+
+        #---- scene_id的获取
         scene_id = file_to_scene_id(sequence_file)
 
-        #---- Outputs
+        #---- Outputs 生成rgb lidar pcl scenario.pt的路径
         os.makedirs(os.path.join(out_root, scene_id), exist_ok=True)
         
         rgb_dir = os.path.join(out_root, scene_id, rgb_dirname) if rgb_dirname else None
@@ -94,15 +96,16 @@ def process_single_sequence(
             if (pcl_dir is None) or os.path.exists(pcl_dir): pcl_dir = None
         
         # NOTE: To normalize segments poses (for letting x=0,y=0,z=0 @ 0-th frame)
+        #---- meta/world_offset
         world_offset = np.zeros([3,])
-        if should_offset_pos:
-            #---- OPTION1: Use the camera_0's 0-th pose as offset
-            # extr00 = np.array(frame0.context.camera_calibrations[0].extrinsic.transform).reshape(4,4)
-            # pose00 = np.array(frame0.images[0].pose.transform).reshape(4,4)
-            # c2w00 = pose00 @ extr00
-            # world_offset = c2w00[:3, 3]
+        if should_offset_pos:  # 考虑偏移
+            #---- OPTION1: Use the camera_0's 0-th pose as offset  第一种方法：用camera的第0个位姿作为偏移
+            # extr00 = np.array(frame0.context.camera_calibrations[0].extrinsic.transform).reshape(4,4)  外参
+            # pose00 = np.array(frame0.images[0].pose.transform).reshape(4,4)  位姿
+            # c2w00 = pose00 @ extr00   矩阵乘法，相机坐标系到世界坐标系的转换
+            # world_offset = c2w00[:3, 3]  代表了相机在世界坐标系中的偏移
             
-            #---- OPTION2: Use the vehicle's 0-th pose as offset (for waymo, the same with OPTION1: waymo's frame.pose is exactly camera0's pose)
+            #---- OPTION2: Use the vehicle's 0-th pose as offset (for waymo, the same with OPTION1: waymo's frame.pose is exactly camera0's pose)  # 第二种方法：用车辆的第0个位姿作为偏移
             frame_pose0 = np.array(frame0.pose.transform, copy=True).reshape(4,4)
             world_offset = frame_pose0[:3, 3]
 
@@ -110,6 +113,7 @@ def process_single_sequence(
 
         #------------------------------------------------------
         #--------    Dynamic object statistics     ------------
+        #--------           动态物体统计            ------------
         #------------------------------------------------------
         dynamic_stats = stat_dynamic_objects(dataset)
         scene_metas['dynamic_stats'] = dynamic_stats
@@ -126,7 +130,7 @@ def process_single_sequence(
             # frame.ParseFromString(bytearray(framd_data.numpy()))
         for frame_ind, frame in enumerate(tqdm(dataset, f"processing...")):
             #---- Ego pose
-            frame_pose = np.array(frame.pose.transform, copy=True).reshape(4,4)
+            frame_pose = np.array(frame.pose.transform, copy=True).reshape(4,4) # 每一帧的pose直接提取出来就是pose
             frame_pose[:3, 3] -= world_offset
             frame_timestamp = frame.timestamp_micros / 1e6
 
@@ -190,7 +194,7 @@ def process_single_sequence(
                     [0, -1, 0]])
                 
                 # NOTE: Waymo: extrinsic=[camera to vehicle]
-                c2v = np.array(c.extrinsic.transform).reshape(4,4)
+                c2v = np.array(c.extrinsic.transform).reshape(4,4)  
                 # NOTE: Waymo: pose=[vehicle to ENU(world)]
                 v2w = np.array(camera.pose.transform).reshape(4,4)
                 v2w[:3, 3] -= world_offset
@@ -212,7 +216,7 @@ def process_single_sequence(
                 scene_observers[str_id]['data']['timestamp'].append(camera.pose_timestamp)
                 scene_observers[str_id]['data']['global_frame_ind'].append(frame_ind)
 
-                #-------- Process observation groundtruths
+                #-------- Process observation groundtruths 产生rgb
                 if should_process_gt and rgb_dir:
                     img = Image.open(io.BytesIO(camera.image))
                     assert [*(np.asarray(img)).shape[:2]] == [h, w]
@@ -443,7 +447,7 @@ def process_single_sequence(
 
         scene_metas['n_frames'] = frame_ind + 1
 
-        #--------------- Per-observer processing
+        #--------------- Per-observer processing 整理
         for oid, odict in scene_observers.items():
             for k, v in odict['data'].items():
                 odict['data'][k] = np.array(v)
@@ -512,9 +516,9 @@ def create_dataset(
     
     os.makedirs(out_root, exist_ok=True)
     
-    seq_fpath_list = parse_seq_file_list(root, seq_list_fpath=seq_list_fpath)
+    seq_fpath_list = parse_seq_file_list(root, seq_list_fpath=seq_list_fpath)  # 读入tfrecord文件
     num_workers = min(j, len(seq_fpath_list))
-    process_fn = functools.partial(
+    process_fn = functools.partial(  # 处理单个序列的函数
         process_single_sequence, 
         out_root=out_root, 
         rgb_dirname="images", 
@@ -525,7 +529,7 @@ def create_dataset(
         ignore_existing=ignore_existing
     )
     
-    if num_workers == 1:
+    if num_workers == 1:  # 如果是单线程
         for seq_fpath in tqdm(seq_fpath_list, 'Processing waymo...'):
             process_fn(seq_fpath)
     else:
@@ -545,17 +549,18 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--root", type=str, default="/media/guojianfei/DataBank0/dataset/waymo/training", required=True, 
+        "--root", type=str, default="/home/dengyufei/DATA/E-StreetSurf/image", required=True, 
         help="Root directory of raw .tfrecords")
     parser.add_argument(
         "--seq_list", type=str, default=None, 
         help="Optional specify subset of sequences. If None, will process all sequences contained in args.root")
     parser.add_argument(
-        "--out_root", type=str, default="/data1/waymo/processed", required=True, 
+        "--out_root", type=str, default="/home/dengyufei/DATA/E-StreetSurf/preprocess", required=True, 
         help="Output root directory")
     parser.add_argument("--no_offset_pose", action="store_true")
     parser.add_argument("--no_process_gt", action="store_true")
     parser.add_argument("--ignore_existing", action="store_true")
     parser.add_argument('-j', type=int, default=4, help='max num workers')
     args = parser.parse_args()
+    
     create_dataset(args.root, args.seq_list, args.out_root, j=args.j, should_offset_pos=not args.no_offset_pose, should_process_gt=not args.no_process_gt, ignore_existing=args.ignore_existing)
